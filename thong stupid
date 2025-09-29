@@ -1,0 +1,85 @@
+-- Plants vs Brainrots Brainrot Dupe Script (iOS Mobile Optimized)
+-- Tác giả: Custom for Delta Executor & Mobile (2025)
+-- Hướng dẫn: Cầm Brainrot (hoặc bất kỳ tool nào) trong tay, bấm phím ảo (hoặc auto trigger).
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Tạo GUI tối giản cho mobile
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "MobileDupeGui"
+screenGui.Parent = playerGui
+screenGui.IgnoreGuiInset = true -- Fix GUI trên mobile
+
+local dupeButton = Instance.new("TextButton")
+dupeButton.Size = UDim2.new(0, 150, 0, 50)
+dupeButton.Position = UDim2.new(0.5, -75, 0.8, -25) -- Đặt nút dưới màn hình
+dupeButton.Text = "Dupe Tool"
+dupeButton.TextColor3 = Color3.new(1, 1, 1)
+dupeButton.BackgroundColor3 = Color3.new(0, 0.5, 0) -- Màu xanh dễ thấy
+dupeButton.Parent = screenGui
+
+-- Hàm dupe chính
+local function dupeBrainrot()
+    local character = player.Character
+    if not character then
+        warn("Chưa vào game hoặc nhân vật chưa load!")
+        return
+    end
+    
+    -- Tìm tool đang cầm (không cần tên cụ thể)
+    local tool = character:FindFirstChildOfClass("Tool")
+    if not tool then
+        warn("Cầm tool (Brainrot hoặc bất kỳ) trong tay trước!")
+        return
+    end
+    
+    -- Clone tool vào backpack (dupe cơ bản)
+    local success, errorMsg = pcall(function()
+        local clonedTool = tool:Clone()
+        clonedTool.Parent = player.Backpack
+        print("Đã dupe tool: " .. tool.Name)
+    end)
+    
+    if not success then
+        warn("Lỗi khi clone: " .. errorMsg)
+        return
+    end
+    
+    -- Thử fire remote event nếu có (tăng khả năng dupe giữ giá trị)
+    local dupeRemote = ReplicatedStorage:FindFirstChild("DupeEvent") or ReplicatedStorage:FindFirstChild("ToolEvent") -- Thử nhiều tên
+    if dupeRemote then
+        dupeRemote:FireServer(tool)
+    end
+    
+    -- Feedback đơn giản (tránh visual effect nặng cho mobile)
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Dupe Tool",
+        Text = "Đã dupe " .. tool.Name .. "! Check backpack.",
+        Duration = 3
+    })
+end
+
+-- Bind nút GUI
+dupeButton.MouseButton1Click:Connect(dupeBrainrot)
+
+-- Bind phím ảo (cho mobile, giả lập phím E hoặc tap)
+UserInputService.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.KeyCode == Enum.KeyCode.E then
+        dupeBrainrot()
+    end
+end)
+
+-- Auto retry nếu lỗi (tăng độ ổn định trên mobile)
+spawn(function()
+    while wait(5) do
+        if player.Character and player.Character:FindFirstChildOfClass("Tool") then
+            dupeBrainrot() -- Auto dupe mỗi 5s nếu cầm tool
+        end
+    end
+end)
+print("Script loaded! Bấm nút hoặc tap màn hình để dupe. Auto dupe mỗi 5s.")
