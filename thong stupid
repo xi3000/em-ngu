@@ -1,6 +1,6 @@
--- Plants vs Brainrots Brainrot Dupe Script (iOS Mobile Optimized, Real Dupe & Gift)
+-- Plants vs Brainrots Brainrot Dupe & Buff Lucky Script (iOS Mobile Optimized, Real Dupe, Gift & Buff)
 -- Tác giả: Custom for Delta Executor & Mobile (2025)
--- Hướng dẫn: Cầm tool (Brainrot), tap nút/tap màn hình để dupe hoặc gift.
+-- Hướng dẫn: Cầm tool (Brainrot), tap nút/tap màn hình để dupe hoặc gift. Buff X10 lucky tự động khi chạy script.
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
@@ -42,6 +42,34 @@ local function logRemotes()
     end
     print("RemoteEvents found: " .. table.concat(remotes, ", "))
     return remotes
+end
+
+-- Hàm buff X10 lucky
+local function buffLucky()
+    local remotesFired = 0
+    for _, remote in pairs(ReplicatedStorage:GetChildren()) do
+        if remote:IsA("RemoteEvent") then
+            pcall(function()
+                -- Thử gửi các tham số liên quan đến luck
+                remote:FireServer("luck", 10) -- Buff X10 luck
+                remote:FireServer("boost", "luck", 10)
+                remote:FireServer("multiplier", "luck", 10)
+                remote:FireServer("increase_drop", "secret")
+                remote:FireServer("increase_drop", "vip")
+                remote:FireServer("increase_drop", "rainbow")
+                remote:FireServer(player, "luck_boost", 10)
+                wait(math.random(0.05, 0.15)) -- Random delay để tránh anti-cheat
+                remotesFired = remotesFired + 1
+            end)
+        end
+    end
+    
+    -- Thông báo
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Buff Lucky",
+        Text = "Đã kích hoạt X10 Lucky! Fired " .. remotesFired .. " remotes. Cơ hội rớt Secret/VIP/Rainbow tăng!",
+        Duration = 5
+    })
 end
 
 -- Hàm dupe chính
@@ -190,4 +218,7 @@ end)
 -- Log RemoteEvents khi khởi động
 logRemotes()
 
-print("Script loaded! Tap nút Dupe/Gift hoặc tap màn hình (1 lần dupe, 2 lần gift). Auto dupe mỗi 3s.")
+-- Chạy buff lucky ngay khi script khởi động
+buffLucky()
+
+print("Script loaded! Tap nút Dupe/Gift hoặc tap màn hình (1 lần dupe, 2 lần gift). Auto dupe mỗi 3s. X10 Lucky đã được kích hoạt!")
